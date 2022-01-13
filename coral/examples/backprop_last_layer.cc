@@ -46,6 +46,7 @@ https://coral.ai/docs/edgetpu/retrain-classification-ondevice-backprop/
 #include "coral/learn/backprop/softmax_regression_model.h"
 #include "coral/tflite_utils.h"
 #include "flatbuffers/flatbuffers.h"
+#include "flatbuffers/util.h"
 #include "glog/logging.h"
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/model_builder.h"
@@ -245,6 +246,10 @@ void TrainAndEvaluate(const std::string& embedding_extractor_path,
   // Append learned weights to input model and save as tflite format.
   flatbuffers::FlatBufferBuilder fbb;
   regression_model.AppendLayersToEmbeddingExtractor(*model->GetModel(), &fbb);
+  CHECK(flatbuffers::SaveFile(absl::GetFlag(FLAGS_output_model_path).c_str(),
+                              reinterpret_cast<char*>(fbb.GetBufferPointer()),
+                              fbb.GetSize(),
+                              /*binary=*/true));
 
   // Evaluate the trained model.
   LOG(INFO) << "Accuracy on training data: "
